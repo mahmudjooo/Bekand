@@ -27,6 +27,8 @@ model User{
   role Role
   firstname String 
   lastname String
+  isActive Boolean @default(true)
+  mustChangePassword Boolean @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   appointments Appointment[] @relation("DoctorAppointments")
