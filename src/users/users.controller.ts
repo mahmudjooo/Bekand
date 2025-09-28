@@ -1,11 +1,13 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { Roles } from 'src/auth/decorator/roles.decorator';
@@ -31,6 +33,10 @@ export class UserController {
   list(@Query() query: ListUsersDto) {
     return this.service.list(query);
   }
+  @Get()
+  findAll() {
+    return this.service.findAll();
+  }
   @Patch(':id/role')
   updateRole(@Param('id') id: string, @Body() updateRoleDto: UpdateRoleDto) {
     return this.service.updateRole(updateRoleDto, id);
@@ -41,5 +47,9 @@ export class UserController {
     @Body() updateStatusDto: UpdateStatusDto,
   ) {
     return this.service.updateStatus(id, updateStatusDto);
+  }
+  @Delete(':id')
+  remove(@Param('id') id: string, @Req() req: any) {
+    return this.service.remove(id, req.user.sub);
   }
 }

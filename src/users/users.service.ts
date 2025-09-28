@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -43,6 +44,16 @@ export class UserService {
       },
     });
     return user;
+  }
+  async findAll() {
+    return this.prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        createdAt: true,
+      },
+    });
   }
   async list(query: ListUsersDto) {
     const where: any = {};
@@ -104,5 +115,32 @@ export class UserService {
       data: { isActive: updateStatusDto.isActive },
       select: { id: true, email: true, isActive: true },
     });
+  }
+  async remove(id: string, requestId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: { id: true, role: true, isActive: true },
+    });
+    if (!user) throw new NotFoundException('User not found');
+
+    if (id === requestId) {
+      throw new ForbiddenException('You cannot delete your own account');
+    }
+    if (user.role === 'admin') {
+      throw new BadRequestException('At least one active admin must remain');
+    }
+    if (user.role === 'doctor') {
+      const [appts, recs] = await this.prisma.$transaction([
+        this.prisma.appointment.count({ where: { doctorId: id } }),
+        this.prisma.medicalRecord.count({ where: { authorId: id } }),
+      ]);
+      if (appts > 0 || recs > 0) {
+        throw new BadRequestException(
+          'Doctor has related appointments/records. Reassign or archive before deletion.',
+        );
+      }
+    }
+    await this.prisma.user.delete({ where: { id } });
+    return { message: 'User deleted' };
   }
 }
