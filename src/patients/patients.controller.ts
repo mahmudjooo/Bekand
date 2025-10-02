@@ -39,12 +39,12 @@ export class PatientsController {
   }
   @Roles('admin', 'reception')
   @Patch(':id')
-  update(@Param() id: string, @Body() dto: UpdatePatientDTO) {
+  update(@Param('id') id: string, @Body() dto: UpdatePatientDTO) {
     return this.service.update(id, dto);
   }
   @Roles('admin')
   @Delete(':id')
-  delete(@Param() id: string) {
+  delete(@Param('id') id: string) {
     return this.service.remove(id);
   }
 }
