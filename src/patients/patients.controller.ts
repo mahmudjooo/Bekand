@@ -27,7 +27,7 @@ export class PatientsController {
   list(@Query() query: ListPatientsDto) {
     return this.service.list(query);
   }
-  @Roles('admin', 'doctor')
+  @Roles('admin', 'reception', 'doctor')
   @Post()
   create(@Body() dto: CreatePatientDto) {
     return this.service.create(dto);
